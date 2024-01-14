@@ -1,35 +1,45 @@
 import pyautogui
+import keyboard
 import time
 
-# Функция для получения координат двух кликов
-def get_click_coordinates():
-    time.sleep(0.5)  # Пауза между кликами
-    print("Пожалуйста, кликните по двум точкам.")
-    
-    # Получаем первую координату
-    first_click = pyautogui.position()
-    print("Координаты первого клика:", first_click)
-    
-    # Ожидаем второй клик
-    input("Нажмите Enter после выполнения второго клика...")
-    
-    # Получаем вторую координату
-    second_click = pyautogui.position()
-    print("Координаты второго клика:", second_click)
-    
-    return first_click, second_click
+# Список для хранения координат и задержек
+coordinates = []
+delays = []
 
-# Функция для повторения кликов каждые 5 секунд
-def repeat_clicks(coordinates):
-    while True:
-        for coord in coordinates:
-            pyautogui.click(coord[0], coord[1])
-            time.sleep(0.5)  # Пауза между кликами
-        time.sleep(2)  # Пауза между повторениями
+# Флаг для управления состоянием автоклика
+auto_clicking = False
 
-if __name__ == "__main__":
-    # Получаем координаты двух кликов
-    click_coordinates = get_click_coordinates()
-    
-    # Запускаем бесконечный цикл повторения кликов
-    repeat_clicks(click_coordinates)
+print("Нажмите F7 для записи координаты, Enter для продолжения.")
+
+# Функция для записи координаты
+def record_coordinate():
+    x, y = pyautogui.position()
+    coordinates.append((x, y))
+    delay = float(input(f"Введите задержку после клика на координате {x}, {y}: "))
+    delays.append(delay)
+    print(f"Координата {x}, {y} с задержкой {delay} секунд добавлена.")
+
+# Ожидание нажатия F7 для записи координаты
+while True:
+    if keyboard.is_pressed('f7'):
+        record_coordinate()
+        time.sleep(0.2)  # небольшая задержка, чтобы избежать множественных записей
+    elif keyboard.is_pressed('enter'):
+        break
+
+print("Нажмите F8 для начала/остановки автоклика.")
+
+# Основной цикл автоклика
+while True:
+    if keyboard.is_pressed('f8'):
+        auto_clicking = not auto_clicking
+        print("Автокликер", "запущен." if auto_clicking else "остановлен.")
+        time.sleep(0.1)  # небольшая задержка, чтобы избежать множественных записей
+
+    if auto_clicking:
+        for (x, y), delay in zip(coordinates, delays):
+            pyautogui.click(x, y)
+            time.sleep(delay)
+
+    if keyboard.is_pressed('esc'):  # Выход из скрипта по нажатию Esc
+        break
